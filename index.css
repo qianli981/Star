@@ -6,14 +6,14 @@ body, html {
   background-color: #05050A;
 }
 
-/* 神秘紫到深邃蓝的圆心渐变 */
+/* 永不消失的神秘紫到深邃蓝圆心渐变背景 */
 .starry-bg {
   position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-  background: radial-gradient(circle at 50% 50%, #491A5B 0%, #171A4A 45%, #050814 100%);
+  background: radial-gradient(circle at 50% 50%, #491A5B 0%, #1A1A4A 45%, #050814 100%);
   z-index: -3;
 }
 
-/* CSS 绘制真实的闪烁星空 */
+/* 永恒闪烁的繁星 */
 .stars {
   position: absolute; top: 0; left: 0; width: 100%; height: 100%;
   background-image: 
@@ -21,41 +21,25 @@ body, html {
     radial-gradient(2px 2px at 30% 60%, #fff, rgba(0,0,0,0)),
     radial-gradient(1px 1px at 70% 30%, #fff, rgba(0,0,0,0)),
     radial-gradient(2px 2px at 90% 80%, #fff, rgba(0,0,0,0)),
-    radial-gradient(1px 1px at 40% 10%, #fff, rgba(0,0,0,0)),
     radial-gradient(2.5px 2.5px at 80% 50%, #fff, rgba(0,0,0,0));
-  background-repeat: repeat; background-size: 250px 250px;
-  opacity: 0.8; z-index: -2;
+  background-size: 250px 250px; opacity: 0.8; z-index: -2;
 }
 
 .twinkling {
   position: absolute; top: 0; left: 0; width: 100%; height: 100%;
   background-image: 
-    radial-gradient(2px 2px at 20% 80%, rgba(255,255,255,0.8), rgba(0,0,0,0)),
-    radial-gradient(3px 3px at 60% 20%, rgba(255,255,255,0.9), rgba(0,0,0,0)),
-    radial-gradient(1.5px 1.5px at 80% 90%, rgba(255,255,255,0.7), rgba(0,0,0,0));
-  background-repeat: repeat; background-size: 300px 300px;
-  animation: twinkle 3s infinite alternate; z-index: -1;
+    radial-gradient(2px 2px at 20% 80%, rgba(255,255,255,0.9), rgba(0,0,0,0)),
+    radial-gradient(3px 3px at 60% 20%, rgba(255,255,255,1), rgba(0,0,0,0)),
+    radial-gradient(1.5px 1.5px at 80% 90%, rgba(255,255,255,0.8), rgba(0,0,0,0));
+  background-size: 300px 300px; animation: twinkle 3s infinite alternate; z-index: -1;
 }
 
-@keyframes twinkle { 0% { opacity: 0.1; transform: scale(0.98); } 100% { opacity: 1; transform: scale(1.02); box-shadow: 0 0 10px #fff; } }
+@keyframes twinkle { 0% { opacity: 0.2; transform: scale(0.98); } 100% { opacity: 1; transform: scale(1.02); box-shadow: 0 0 10px #fff; } }
 
-/* ...（上面星空和UI的CSS保持原样，直接替换最下面的这个）... */
-
-/* 右上角监控小窗：精致的正方形，绝对不挡字 */
 #gesture-canvas {
-  position: absolute; 
-  top: 20px; 
-  right: 20px; 
-  width: 60px; 
-  height: 60px; 
-  z-index: 100;
-  transform: scaleX(-1);
-  border: 1px solid rgba(230, 194, 122, 0.6);
-  border-radius: 8px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.8);
-  background-color: #05050A;
-  opacity: 0.85; 
-  pointer-events: none;
+  position: absolute; top: 20px; right: 20px; width: 70px; height: 70px; z-index: 100;
+  transform: scaleX(-1); border: 1px solid rgba(230, 194, 122, 0.6); border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.8); background-color: rgba(5,5,10,0.6); pointer-events: none;
 }
 
 #start-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(5,5,10,0.8); z-index: 999; display: flex; flex-direction: column; justify-content: center; align-items: center; color: #E6C27A; backdrop-filter: blur(5px); }
@@ -71,12 +55,11 @@ body, html {
 
 .card-info {
   position: absolute; bottom: 30px; left: 3%; right: 3%; text-align: center;
-  background: rgba(5, 5, 10, 0.85); border: 1px solid #E6C27A; padding: 20px 10px;
+  background: rgba(5, 5, 10, 0.85); border: 1px solid #E6C27A; padding: 20px 5px;
   border-radius: 4px; backdrop-filter: blur(15px); transition: opacity 1.5s;
-  display: flex; justify-content: space-around; gap: 8px; box-shadow: 0 0 30px rgba(0,0,0,0.8);
-  opacity: 0;
+  display: flex; justify-content: space-around; gap: 5px; box-shadow: 0 0 30px rgba(0,0,0,0.8); opacity: 0;
 }
 .card-info div { flex: 1; }
-.card-info h2 { color: #E6C27A; font-size: 15px; margin-bottom: 8px; text-shadow: 0 0 5px rgba(230,194,122,0.5);}
-.card-info h3 { color: #8C96A6; font-size: 12px; margin-bottom: 6px; letter-spacing: 2px;}
-.card-info p { color: #fff; font-size: 11px; line-height: 1.5;}
+.card-info h2 { color: #E6C27A; font-size: 14px; margin-bottom: 8px; text-shadow: 0 0 5px rgba(230,194,122,0.5);}
+.card-info h3 { color: #8C96A6; font-size: 11px; margin-bottom: 6px; letter-spacing: 2px;}
+.card-info p { color: #fff; font-size: 10px; line-height: 1.5;}

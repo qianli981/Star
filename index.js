@@ -1,15 +1,11 @@
-// --- 1. 古典韦特塔罗牌云端图库映射 ---
-// 为了展现古西欧繁华，这里直接调用经典公有领域塔罗牌的 CDN 图片
 const TAROT_BASE_URL = "https://raw.githubusercontent.com/howech/tarot-images/master/cards/";
 const fullDeckData = [
   { id: 'ar00', name: "愚者 The Fool" }, { id: 'ar01', name: "魔术师 The Magician" }, { id: 'ar02', name: "女祭司 The High Priestess" }, { id: 'ar03', name: "皇后 The Empress" }, { id: 'ar04', name: "皇帝 The Emperor" }, { id: 'ar05', name: "教皇 The Hierophant" }, { id: 'ar06', name: "恋人 The Lovers" }, { id: 'ar07', name: "战车 The Chariot" }, { id: 'ar08', name: "力量 Strength" }, { id: 'ar09', name: "隐士 The Hermit" }, { id: 'ar10', name: "命运之轮 Wheel of Fortune" }, { id: 'ar11', name: "正义 Justice" }, { id: 'ar12', name: "倒吊人 The Hanged Man" }, { id: 'ar13', name: "死神 Death" }, { id: 'ar14', name: "节制 Temperance" }, { id: 'ar15', name: "恶魔 The Devil" }, { id: 'ar16', name: "高塔 The Tower" }, { id: 'ar17', name: "星星 The Star" }, { id: 'ar18', name: "月亮 The Moon" }, { id: 'ar19', name: "太阳 The Sun" }, { id: 'ar20', name: "审判 Judgement" }, { id: 'ar21', name: "世界 The World" }
 ];
-// 填充小阿卡纳 (略简，确保有78张基数)
 const suits = [{ pre: 'wa', name: "权杖" }, { pre: 'cu', name: "圣杯" }, { pre: 'sw', name: "宝剑" }, { pre: 'pe', name: "星币" }];
 const ranks = ["01","02","03","04","05","06","07","08","09","10","11","12","13","14"];
 suits.forEach(suit => ranks.forEach(rank => fullDeckData.push({ id: `${suit.pre}${rank}`, name: `${suit.name} ${rank}` })));
 
-// 状态机 a-g
 const STATE = { a_STACK: 'a', b_SHUFFLE: 'b', c_ZOOM: 'c', d_DRAW: 'd', e_RESHUFFLE: 'e', f_FINAL: 'f', g_RESET: 'g' };
 let currentState = STATE.a_STACK;
 let drawnCards = []; 
@@ -29,26 +25,18 @@ document.body.appendChild(renderer.domElement);
 const ambientLight = new THREE.AmbientLight(0xffffff, 0.9); scene.add(ambientLight);
 const dirLight = new THREE.DirectionalLight(0xFFEAAA, 2.5); dirLight.position.set(5, 5, 8); scene.add(dirLight);
 
-// --- 极致奢华：图一黑金烫金牌背生成算法 ---
 function createLuxuryBackTexture() {
   const cvs = document.createElement('canvas'); cvs.width = 512; cvs.height = 896;
   const ctx = cvs.getContext('2d');
-  
-  // 哑光黑底
   ctx.fillStyle = '#0a0a0c'; ctx.fillRect(0, 0, 512, 896); 
-  
-  // 烫金渐变色
   const goldGradient = ctx.createLinearGradient(0, 0, 512, 896);
   goldGradient.addColorStop(0, '#B38728'); goldGradient.addColorStop(0.5, '#FBF5B7'); goldGradient.addColorStop(1, '#B38728');
   ctx.strokeStyle = goldGradient; ctx.fillStyle = goldGradient;
   
-  // 繁复外框
   ctx.lineWidth = 8; ctx.strokeRect(20, 20, 472, 856);
   ctx.lineWidth = 2; ctx.strokeRect(32, 32, 448, 832);
   
   ctx.save(); ctx.translate(256, 448);
-  
-  // 绘制华丽的四角图腾 (曼陀罗花纹感)
   const drawCorner = (x, y) => { 
     ctx.save(); ctx.translate(x, y);
     for(let i=0; i<8; i++) {
@@ -60,22 +48,19 @@ function createLuxuryBackTexture() {
   };
   drawCorner(-170, -360); drawCorner(170, -360); drawCorner(-170, 360); drawCorner(170, 360);
 
-  // 中心星象仪与六芒星 (1:1 还原图一的复杂感)
   ctx.beginPath(); ctx.arc(0, 0, 150, 0, Math.PI*2); ctx.stroke();
   ctx.beginPath(); ctx.setLineDash([4, 8]); ctx.arc(0, 0, 165, 0, Math.PI*2); ctx.stroke(); ctx.setLineDash([]);
   ctx.beginPath(); ctx.arc(0, 0, 180, 0, Math.PI*2); ctx.stroke();
   
   ctx.lineWidth = 3;
-  ctx.beginPath(); // 正三角
+  ctx.beginPath(); 
   for(let i=0; i<3; i++){ ctx.lineTo(150*Math.cos(i*Math.PI*2/3 - Math.PI/2), 150*Math.sin(i*Math.PI*2/3 - Math.PI/2)); } ctx.closePath(); ctx.stroke();
-  ctx.beginPath(); // 倒三角
+  ctx.beginPath(); 
   for(let i=0; i<3; i++){ ctx.lineTo(150*Math.cos(i*Math.PI*2/3 + Math.PI/6), 150*Math.sin(i*Math.PI*2/3 + Math.PI/6)); } ctx.closePath(); ctx.stroke();
   
-  // 中心魔法太阳
   ctx.beginPath(); ctx.arc(0, 0, 40, 0, Math.PI*2); ctx.fill();
   for(let i=0; i<16; i++){ ctx.moveTo(0,0); ctx.lineTo(60*Math.cos(i*Math.PI/8), 60*Math.sin(i*Math.PI/8)); ctx.stroke(); }
   
-  // 上下月相
   ctx.beginPath(); ctx.arc(0, -260, 40, 0, Math.PI*2); ctx.stroke();
   ctx.beginPath(); ctx.arc(-15, -260, 30, 0, Math.PI*2); ctx.clip(); ctx.fillRect(-50,-300,100,100);
   ctx.restore();
@@ -102,7 +87,6 @@ for (let i = 0; i < 78; i++) {
 }
 scene.add(deck);
 
-// 单指抽取时的边缘金粉粒子
 const particleGeo = new THREE.BufferGeometry();
 const particlePos = new Float32Array(300);
 for(let i=0; i<300; i++) particlePos[i] = (Math.random()-0.5)*3;
@@ -111,7 +95,6 @@ const particleMat = new THREE.PointsMaterial({ color: 0xE6C27A, size: 0.15, tran
 const particles = new THREE.Points(particleGeo, particleMat);
 scene.add(particles);
 
-// 化作星星消散的星尘
 const starGeo = new THREE.BufferGeometry();
 const starPos = new Float32Array(1500 * 3);
 starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
@@ -125,7 +108,6 @@ function animate() {
   
   if(currentState === STATE.a_STACK) deck.position.y = Math.sin(time*2)*0.1;
   
-  // 保持洗牌方向和手势方向一致
   if(currentState === STATE.b_SHUFFLE || currentState === STATE.c_ZOOM) {
     deck.position.x += (handVector.x * 15 - deck.position.x) * 0.05;
     deck.position.y += (handVector.y * 10 - deck.position.y) * 0.05;
@@ -144,7 +126,6 @@ const setStatus = (txt) => document.getElementById('status-text').innerText = tx
 const slots = [-3.8, 0, 3.8]; 
 
 window.tarotApp = {
-  // a, g 状态: 握拳变回一摞
   stack: () => {
     if(currentState === STATE.a_STACK) return;
     currentState = STATE.a_STACK; drawnCards = [];
@@ -163,7 +144,6 @@ window.tarotApp = {
     deck.position.set(0,0,0);
   },
   
-  // b, e 状态: 两指并拢散开洗牌
   shuffle: () => {
     if(drawnCards.length >= 3 || currentState === STATE.b_SHUFFLE) return;
     currentState = STATE.b_SHUFFLE; setStatus("命运流转，跟随手势 [两指并拢]");
@@ -181,21 +161,19 @@ window.tarotApp = {
     });
   },
 
-  // c 状态: 两指张开凑近
   zoom: () => {
     if(drawnCards.length >= 3 || currentState === STATE.c_ZOOM) return;
     currentState = STATE.c_ZOOM; setStatus("放大凝视，挑选宿命 [两指张开]");
     gsap.to(deck.position, { z: 8, duration: 1.2, ease: "power2.out" }); 
   },
 
-  // d 状态: 单指抽取最近的牌
   draw: () => {
     if(drawnCards.length >= 3 || currentState === STATE.d_DRAW) return;
     currentState = STATE.d_DRAW; setStatus("锁定宿命落位 [伸出单指]");
     
     const unDrawnCards = cards.filter(c => !drawnCards.includes(c));
     unDrawnCards.forEach(c => scene.attach(c)); 
-    unDrawnCards.sort((a, b) => b.position.z - a.position.z); // 找最近的
+    unDrawnCards.sort((a, b) => b.position.z - a.position.z); 
     
     currentDrawingCard = unDrawnCards[0];
     drawnCards.push(currentDrawingCard);
@@ -213,7 +191,6 @@ window.tarotApp = {
     }
   },
 
-  // f 状态: 抽满三张，其余化作星星，中心翻开传统图案
   finalReveal: () => {
     currentState = STATE.f_FINAL; setStatus("宿命已定，化作星尘 [抽取三张后]");
     gsap.to(particles.material, { opacity: 0, duration: 0.5 });
@@ -238,12 +215,10 @@ window.tarotApp = {
     gsap.to(starField.material, { opacity: 1, duration: 0.5 });
     gsap.to(starField.material, { opacity: 0, duration: 3, delay: 1 }); 
 
-    // 三张牌飞跃中心并翻开 (加载真实古典传统塔罗图片)
     drawnCards.forEach((card, i) => {
       const isReversed = Math.random() > 0.5;
       card.userData.reversed = isReversed;
       
-      // 加载古西欧传统韦特塔罗牌图！
       const textureUrl = `${TAROT_BASE_URL}${card.userData.data.id}.jpg`;
       textureLoader.load(textureUrl, (tex) => {
         card.material[4].map = tex;
@@ -271,7 +246,6 @@ window.tarotApp = {
   }
 };
 
-// --- 极致摄像头骨骼映射追踪 (图三要求：精准贴合手指) ---
 const videoElement = document.getElementById('video-input');
 const canvasElement = document.getElementById('gesture-canvas');
 const canvasCtx = canvasElement.getContext('2d');
@@ -284,26 +258,21 @@ hands.onResults((results) => {
     setStatus("万物归原 [握拳]");
   }
 
-  // 铺满全屏，镜像显示，完美重合
-  canvasElement.width = window.innerWidth;
-  canvasElement.height = window.innerHeight;
-  canvasCtx.save();
-  canvasCtx.scale(-1, 1);
-  canvasCtx.translate(-canvasElement.width, 0);
+  // 【核心修复】：固定右上角小窗的尺寸 (对应 CSS 的 200x150)
+  canvasElement.width = 200;
+  canvasElement.height = 150;
   
+  canvasCtx.save();
+  canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+  
+  // 在小窗内绘制摄像头画面
   if (results.image) {
-    // 采用 cover 模式填充画布，保证不形变且满屏
-    const ratio = Math.max(canvasElement.width / results.image.width, canvasElement.height / results.image.height);
-    const w = results.image.width * ratio, h = results.image.height * ratio;
-    const x = (canvasElement.width - w) / 2, y = (canvasElement.height - h) / 2;
-    canvasCtx.drawImage(results.image, x, y, w, h);
+    canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
   }
-  canvasCtx.restore();
 
   if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
     const lm = results.multiHandLandmarks[0];
     
-    // 手势中心点用于控制洗牌视角
     handVector.x = (0.5 - lm[9].x); handVector.y = (0.5 - lm[9].y);
 
     const indexY = lm[8].y, indexBase = lm[5].y;
@@ -314,7 +283,6 @@ hands.onResults((results) => {
     const indexUp = indexY < indexBase, middleUp = middleY < middleBase;
     const ringDown = ringY > ringBase, pinkyDown = pinkyY > pinkyBase;
 
-    // 两指尖距离，区分并拢与张开
     const distIM = Math.hypot(lm[8].x - lm[12].x, lm[8].y - lm[12].y);
 
     const isFist = !indexUp && !middleUp && ringDown && pinkyDown;
@@ -324,24 +292,19 @@ hands.onResults((results) => {
     const isTwoTogether = isTwoFingers && distIM < 0.08;
     const isTwoApart = isTwoFingers && distIM >= 0.08;
 
-    // 严格按指令流转状态机 a-g
     if (isFist) {
-      window.tarotApp.stack(); // g -> a 态
+      window.tarotApp.stack(); 
     } else if (currentState !== STATE.f_FINAL) {
-      if (isTwoTogether) window.tarotApp.shuffle(); // b, e 态
-      else if (isTwoApart) window.tarotApp.zoom();  // c 态
-      else if (isOneFinger) window.tarotApp.draw(); // d 态
+      if (isTwoTogether) window.tarotApp.shuffle(); 
+      else if (isTwoApart) window.tarotApp.zoom();  
+      else if (isOneFinger) window.tarotApp.draw(); 
     }
 
-    // 绘制与手精准贴合的金丝骨骼
-    canvasCtx.save();
-    canvasCtx.scale(-1, 1);
-    canvasCtx.translate(-canvasElement.width, 0);
+    // 【核心修复】：在小窗内绘制骨架，精准贴合里面的手
     canvasCtx.strokeStyle = "rgba(230, 194, 122, 0.8)";
     canvasCtx.lineWidth = 2;
     canvasCtx.fillStyle = "rgba(255, 255, 255, 0.9)";
     
-    // 连接线段
     const drawLine = (p1, p2) => {
       canvasCtx.beginPath();
       canvasCtx.moveTo(p1.x * canvasElement.width, p1.y * canvasElement.height);
@@ -351,15 +314,14 @@ hands.onResults((results) => {
     const fingers = [[0,1,2,3,4], [0,5,6,7,8], [0,9,10,11,12], [0,13,14,15,16], [0,17,18,19,20]];
     fingers.forEach(f => { for(let i=0; i<f.length-1; i++) drawLine(lm[f[i]], lm[f[i+1]]); });
 
-    // 关节点
     lm.forEach(p => { 
       canvasCtx.beginPath(); 
-      canvasCtx.arc(p.x * canvasElement.width, p.y * canvasElement.height, 4, 0, 2*Math.PI); 
+      canvasCtx.arc(p.x * canvasElement.width, p.y * canvasElement.height, 3, 0, 2*Math.PI); 
       canvasCtx.fill(); 
       canvasCtx.stroke();
     });
-    canvasCtx.restore();
   }
+  canvasCtx.restore();
 });
 
 document.getElementById('start-cam-btn').addEventListener('click', () => {
@@ -370,7 +332,7 @@ document.getElementById('start-cam-btn').addEventListener('click', () => {
   
   const cameraUtils = new Camera(videoElement, { 
     onFrame: async () => { await hands.send({ image: videoElement }); }, 
-    width: 640, height: 480 // 提高分辨率以便覆盖全屏
+    width: 640, height: 480 
   });
   cameraUtils.start().then(() => setStatus("星空已连接，等待手势指令"));
 });
@@ -378,5 +340,4 @@ document.getElementById('start-cam-btn').addEventListener('click', () => {
 window.addEventListener('resize', () => {
   camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
-  canvasElement.width = window.innerWidth; canvasElement.height = window.innerHeight;
 });

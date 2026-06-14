@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <title>命运之戏 - 完整78牌阵</title>
   <link rel="stylesheet" href="index.css">
   
@@ -27,9 +26,7 @@
     <div class="card-info" id="card-info" style="opacity:0;"></div>
   </div>
 
-  <!-- 关键修改: 不使用display:none，而是用极小尺寸和透明度来隐藏 -->
-  <video id="video-input" autoplay muted playsinline style="position: absolute; top: 0; left: 0; width: 1px; height: 1px; opacity: 0.01; pointer-events: none; z-index: -1;"></video>
-
+  <video id="video-input" autoplay muted playsinline style="display:none;"></video>
   <canvas id="gesture-canvas"></canvas>
 
   <script src="index.js"></script>

@@ -1,99 +1,39 @@
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
+* { margin: 0; padding: 0; box-sizing: border-box; }
 body, html {
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  /* 神秘紫到深邃黑蓝的渐变 */
-  background: radial-gradient(circle at 50% 40%, #2A1B38 0%, #0A0D14 60%, #030408 100%);
-  font-family: "Optima", "Palatino Linotype", "Times New Roman", serif; /* 优雅的衬线字体 */
+  width: 100%; height: 100%; overflow: hidden;
+  background: radial-gradient(circle at 50% 50%, #1A1525 0%, #08090E 70%, #000000 100%);
+  font-family: "Optima", serif;
 }
 
-#ui-layer {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  padding: 30px 20px;
-  z-index: 100;
+/* 启动屏样式 */
+#start-screen {
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+  background: #05050A; z-index: 999; display: flex; flex-direction: column;
+  justify-content: center; align-items: center; color: #E6C27A;
+}
+#start-screen h1 { font-size: 32px; letter-spacing: 5px; margin-bottom: 10px; text-shadow: 0 0 20px #E6C27A; }
+#start-screen p { color: #8C96A6; font-size: 14px; margin-bottom: 40px; }
+#start-cam-btn {
+  background: transparent; border: 1px solid #E6C27A; color: #E6C27A;
+  padding: 15px 30px; font-size: 16px; border-radius: 4px; box-shadow: 0 0 15px rgba(230,194,122,0.2);
 }
 
-.header h1 {
-  color: #E6C27A; /* 柔和白金色 */
-  font-size: 28px;
-  letter-spacing: 4px;
-  font-weight: normal;
-  text-shadow: 0 0 10px rgba(230, 194, 122, 0.3);
-}
+#ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 100; padding: 20px;}
+.header h1 { color: #E6C27A; font-size: 24px; letter-spacing: 2px; }
+.header .subtitle { color: #8C96A6; font-size: 12px; letter-spacing: 4px; }
+.status-box { margin-top: 15px; background: rgba(0,0,0,0.6); border-left: 2px solid #E6C27A; padding: 5px 10px; }
+#status-text { color: #D1D5E0; font-size: 14px; }
 
-.header .subtitle {
-  color: #8C96A6;
-  font-size: 12px;
-  letter-spacing: 6px;
-  margin-top: 4px;
+/* 抽牌后的文字解读浮层 */
+.card-info {
+  position: absolute; bottom: 40px; left: 20%; right: 20%; text-align: center;
+  background: rgba(10, 13, 20, 0.8); border: 1px solid #E6C27A; padding: 15px;
+  border-radius: 8px; backdrop-filter: blur(5px); transition: opacity 0.5s;
 }
-
-.status-box {
-  position: absolute;
-  top: 80px;
-  left: 20px;
-  background: rgba(10, 13, 20, 0.6);
-  border-left: 2px solid #E6C27A;
-  padding: 8px 12px;
-  backdrop-filter: blur(4px);
-}
-
-#status-text {
-  color: #D1D5E0;
-  font-size: 13px;
-  font-family: sans-serif;
-  letter-spacing: 1px;
-}
-
-#fallback-btn {
-  margin-bottom: 20px;
-  display: flex;
-  gap: 15px;
-}
-
-#fallback-btn button {
-  pointer-events: auto;
-  background: linear-gradient(135deg, #1A1A24 0%, #0D0D14 100%);
-  color: #E6C27A;
-  border: 1px solid rgba(230, 194, 122, 0.4);
-  padding: 12px 20px;
-  border-radius: 2px;
-  font-size: 16px;
-  letter-spacing: 2px;
-  cursor: pointer;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-  transition: all 0.3s ease;
-}
-
-#fallback-btn button span {
-  font-size: 10px;
-  color: #8C96A6;
-  letter-spacing: 0;
-}
+.card-info h2 { color: #E6C27A; font-size: 20px; margin-bottom: 5px; }
+.card-info p { color: #fff; font-size: 14px; }
 
 #gesture-canvas {
-  position: absolute;
-  top: 30px;
-  right: 20px;
-  width: 120px;
-  height: 90px;
-  z-index: 99;
-  transform: scaleX(-1);
-  border: 1px solid rgba(230, 194, 122, 0.2);
-  border-radius: 4px;
-  box-shadow: 0 0 20px rgba(0,0,0,0.8);
+  position: absolute; top: 20px; right: 20px; width: 100px; height: 75px; z-index: 99;
+  transform: scaleX(-1); border: 1px solid rgba(230, 194, 122, 0.3);
 }

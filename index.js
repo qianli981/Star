@@ -1,3 +1,4 @@
+// 全球加速 CDN，直连韦特传统塔罗牌库
 const TAROT_BASE_URL = "https://cdn.jsdelivr.net/gh/howech/tarot-images@master/cards/";
 const fullDeckData = [
   { id: 'ar00', name: "愚者 The Fool" }, { id: 'ar01', name: "魔术师 The Magician" }, { id: 'ar02', name: "女祭司 The High Priestess" }, { id: 'ar03', name: "皇后 The Empress" }, { id: 'ar04', name: "皇帝 The Emperor" }, { id: 'ar05', name: "教皇 The Hierophant" }, { id: 'ar06', name: "恋人 The Lovers" }, { id: 'ar07', name: "战车 The Chariot" }, { id: 'ar08', name: "力量 Strength" }, { id: 'ar09', name: "隐士 The Hermit" }, { id: 'ar10', name: "命运之轮 Wheel of Fortune" }, { id: 'ar11', name: "正义 Justice" }, { id: 'ar12', name: "倒吊人 The Hanged Man" }, { id: 'ar13', name: "死神 Death" }, { id: 'ar14', name: "节制 Temperance" }, { id: 'ar15', name: "恶魔 The Devil" }, { id: 'ar16', name: "高塔 The Tower" }, { id: 'ar17', name: "星星 The Star" }, { id: 'ar18', name: "月亮 The Moon" }, { id: 'ar19', name: "太阳 The Sun" }, { id: 'ar20', name: "审判 Judgement" }, { id: 'ar21', name: "世界 The World" }
@@ -10,7 +11,7 @@ const STATE = { a_STACK: 'a', b_SHUFFLE: 'b', c_ZOOM: 'c', d_DRAW: 'd', f_FINAL:
 let currentState = STATE.a_STACK;
 let drawnCards = []; 
 let handVector = { x: 0, y: 0 };
-let isVisionActive = true; // 灵视开关状态
+let isVisionActive = true; 
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
@@ -47,11 +48,9 @@ function createLuxuryBackTexture() {
   ctx.beginPath(); ctx.arc(0, 0, 150, 0, Math.PI*2); ctx.stroke();
   ctx.beginPath(); ctx.setLineDash([4, 8]); ctx.arc(0, 0, 165, 0, Math.PI*2); ctx.stroke(); ctx.setLineDash([]);
   ctx.beginPath(); ctx.arc(0, 0, 180, 0, Math.PI*2); ctx.stroke();
-  
   ctx.lineWidth = 3;
   ctx.beginPath(); for(let i=0; i<3; i++){ ctx.lineTo(150*Math.cos(i*Math.PI*2/3 - Math.PI/2), 150*Math.sin(i*Math.PI*2/3 - Math.PI/2)); } ctx.closePath(); ctx.stroke();
   ctx.beginPath(); for(let i=0; i<3; i++){ ctx.lineTo(150*Math.cos(i*Math.PI*2/3 + Math.PI/6), 150*Math.sin(i*Math.PI*2/3 + Math.PI/6)); } ctx.closePath(); ctx.stroke();
-  
   ctx.beginPath(); ctx.arc(0, 0, 40, 0, Math.PI*2); ctx.fill();
   for(let i=0; i<16; i++){ ctx.moveTo(0,0); ctx.lineTo(60*Math.cos(i*Math.PI/8), 60*Math.sin(i*Math.PI/8)); ctx.stroke(); }
   ctx.restore();
@@ -85,6 +84,7 @@ const particleMat = new THREE.PointsMaterial({ color: 0xE6C27A, size: 0.15, tran
 const particles = new THREE.Points(particleGeo, particleMat);
 scene.add(particles);
 
+// 【洗牌动画引擎】：让牌散开后像流水一样互相穿梭游动
 function animate() {
   requestAnimationFrame(animate);
   const time = Date.now() * 0.001;
@@ -93,13 +93,21 @@ function animate() {
     deck.position.y = Math.sin(time*2)*0.1;
   }
   
-  // 【核心修复】：只要不是重叠或最终态，即使在 d_DRAW (抽牌中)，deck 依然继续受手势驱动洗牌！
   if(currentState === STATE.b_SHUFFLE || currentState === STATE.c_ZOOM || currentState === STATE.d_DRAW) {
+    // 整体跟随手势移动
     deck.position.x += (handVector.x * 20 - deck.position.x) * 0.08;
     deck.position.y += (handVector.y * 15 - deck.position.y) * 0.08;
-    // 增加细微的流水波动感
     deck.rotation.y = handVector.x * 0.3;
     deck.rotation.x = -handVector.y * 0.3;
+
+    // 内部卡牌持续洗牌游动
+    cards.forEach((card, i) => {
+      if(card.parent === deck) {
+        card.position.x += Math.sin(time * 1.5 + i) * 0.015;
+        card.position.y += Math.cos(time * 1.2 + i) * 0.015;
+        card.rotation.z += Math.sin(time * 2 + i) * 0.002;
+      }
+    });
   }
   
   if(currentState === STATE.d_DRAW && particles.material.opacity > 0) {
@@ -121,20 +129,17 @@ const getSlots = () => {
   return aspect > 1 ? [-3.5, 0, 3.5] : [-2.0, 0, 2.0]; 
 };
 
-// 触发/保持发散状态
 const triggerSpread = () => {
   const unDrawnCards = cards.filter(c => !drawnCards.includes(c));
   unDrawnCards.forEach((card) => {
     if(card.parent !== deck) deck.attach(card); 
-    // 如果已经散开了，就不重新生成随机坐标，避免每次切状态牌都瞬间乱飞
     if(!card.userData.spreadX) {
       card.userData.spreadX = (Math.random() - 0.5) * 20;
       card.userData.spreadY = (Math.random() - 0.5) * 14;
       card.userData.spreadZ = (Math.random() - 0.5) * 6;
-      card.userData.spreadRot = (Math.random() - 0.5) * 0.5;
     }
     gsap.to(card.position, { x: card.userData.spreadX, y: card.userData.spreadY, z: card.userData.spreadZ, duration: 1.2, ease: "power2.out" });
-    gsap.to(card.rotation, { x: 0, y: Math.PI, z: card.userData.spreadRot, duration: 1.2 }); 
+    gsap.to(card.rotation, { x: 0, y: Math.PI, z: (Math.random()-0.5)*0.5, duration: 1.2 }); 
   });
 };
 
@@ -142,13 +147,13 @@ window.tarotApp = {
   stack: () => {
     if(currentState === STATE.a_STACK) return;
     currentState = STATE.a_STACK; drawnCards = [];
-    setStatus(isVisionActive ? "万物归原 [握拳]" : "万物归原 [已重置]"); 
+    setStatus(isVisionActive ? "万物归原 [握拳]" : "万物归原 [触控模式]"); 
     document.getElementById('card-info').style.opacity = 0;
     gsap.to(particles.material, { opacity: 0, duration: 0.5 });
     
     cards.forEach((card, i) => {
       card.visible = true; scene.attach(card); 
-      card.userData.spreadX = null; // 清除散开记忆
+      card.userData.spreadX = null; 
       gsap.to(card.position, { x: 0, y: 0, z: -i * 0.005, duration: 1.0, ease: "power2.inOut" });
       gsap.to(card.rotation, { x: 0, y: Math.PI, z: 0, duration: 1.0 }); 
       gsap.to(card.scale, { x: 1, y: 1, z: 1, duration: 0.5 });
@@ -161,7 +166,7 @@ window.tarotApp = {
   shuffle: () => {
     if(drawnCards.length >= 3 || currentState === STATE.b_SHUFFLE) return;
     currentState = STATE.b_SHUFFLE; 
-    setStatus(isVisionActive ? "命运跟随 [五指并拢]" : "命运跟随 [滑动屏幕]");
+    setStatus(isVisionActive ? "命运跟随 [五指并拢]" : "命运跟随 [拖拽屏幕洗牌]");
     gsap.to(deck.position, { z: 0, duration: 1, ease: "power2.out" }); 
     triggerSpread(); 
   },
@@ -169,7 +174,7 @@ window.tarotApp = {
   zoom: () => {
     if(drawnCards.length >= 3 || currentState === STATE.c_ZOOM) return;
     currentState = STATE.c_ZOOM; 
-    setStatus(isVisionActive ? "拉近凝视 [五指张开]" : "拉近凝视 [滑动屏幕]");
+    setStatus(isVisionActive ? "拉近凝视 [五指张开]" : "拉近凝视 [双击或滚轮放大]");
     gsap.to(deck.position, { z: 8, duration: 1.2, ease: "power2.out" }); 
     triggerSpread(); 
   },
@@ -177,10 +182,10 @@ window.tarotApp = {
   draw: () => {
     if(drawnCards.length >= 3) return;
     currentState = STATE.d_DRAW; 
-    setStatus(isVisionActive ? "锁定落位 [双指抽取]" : "锁定落位 [点击抽取]");
+    setStatus(isVisionActive ? "锁定落位 [两指抽取]" : "锁定落位 [单点屏幕抽取]");
     
     const unDrawnCards = cards.filter(c => !drawnCards.includes(c));
-    unDrawnCards.forEach(c => scene.attach(c)); // 转到世界坐标，脱离洗牌组
+    unDrawnCards.forEach(c => scene.attach(c)); 
     unDrawnCards.sort((a, b) => b.position.z - a.position.z); 
     
     const targetCard = unDrawnCards[0];
@@ -246,51 +251,67 @@ window.tarotApp = {
 };
 
 // ==========================================
-// 触屏 / 鼠标保底驱动引擎 (闭眼模式)
+// 触控/鼠标底层驱动引擎 (完美闭环模式)
 // ==========================================
 let isDragging = false;
 let startX = 0, startY = 0;
+let lastTapTime = 0;
 
+// 灵视开关按钮逻辑
 document.getElementById('toggle-vision-btn').addEventListener('click', (e) => {
   isVisionActive = !isVisionActive;
   e.target.innerText = isVisionActive ? "关闭灵视" : "开启灵视";
   document.getElementById('gesture-canvas').style.opacity = isVisionActive ? "1" : "0";
-  if(!isVisionActive && currentState !== STATE.f_FINAL) {
-    setStatus("触控模式：滑动洗牌 | 点击抽牌");
-  } else if (isVisionActive && currentState !== STATE.f_FINAL) {
-    setStatus("灵视开启：等待手势");
-  }
+  if(!isVisionActive && currentState !== STATE.f_FINAL) setStatus("触控模式：滑动洗牌 | 单点抽牌 | 双击放大");
+  else if (isVisionActive && currentState !== STATE.f_FINAL) setStatus("灵视开启：等待手势");
 });
 
-// 点击状态栏重置
+// 左上角状态栏 -> 点击直接重置收起
 document.getElementById('reset-trigger').addEventListener('click', () => window.tarotApp.stack());
 
-window.addEventListener('pointerdown', (e) => {
-  if(isVisionActive || e.target.tagName === 'BUTTON' || e.target.closest('#reset-trigger')) return;
-  isDragging = true;
-  startX = e.clientX; startY = e.clientY;
-});
-
-window.addEventListener('pointermove', (e) => {
-  if(isVisionActive || !isDragging) return;
-  // 映射屏幕坐标为手势向量 (保持洗牌跟随)
-  handVector.x = -(e.clientX / window.innerWidth - 0.5);
-  handVector.y = -(e.clientY / window.innerHeight - 0.5);
-  if(currentState !== STATE.f_FINAL) window.tarotApp.shuffle();
-});
-
-window.addEventListener('pointerup', (e) => {
-  if(isVisionActive || e.target.tagName === 'BUTTON' || e.target.closest('#reset-trigger')) return;
+// 全局捕捉鼠标与手指触摸事件
+const handleDown = (x, y) => {
+  if(isVisionActive) return;
+  isDragging = true; startX = x; startY = y;
+};
+const handleMove = (x, y) => {
+  if(!isDragging || isVisionActive) return;
+  handVector.x = -(x / window.innerWidth - 0.5);
+  handVector.y = -(y / window.innerHeight - 0.5);
+  // 滑动即触发洗牌
+  if(currentState === STATE.a_STACK) window.tarotApp.shuffle();
+};
+const handleUp = (x, y) => {
+  if(!isDragging || isVisionActive) return;
   isDragging = false;
-  // 如果没怎么滑动就松手，视为“点击抽牌”
-  const dist = Math.hypot(e.clientX - startX, e.clientY - startY);
+  const dist = Math.hypot(x - startX, y - startY);
+  
   if(dist < 15 && currentState !== STATE.f_FINAL) {
-    window.tarotApp.draw();
+    // 判定为单点 -> 抽牌
+    const now = Date.now();
+    if(now - lastTapTime < 300) {
+      // 判定为双击 -> 放大 (五指张开等效)
+      window.tarotApp.zoom();
+    } else {
+      if(currentState === STATE.a_STACK) window.tarotApp.shuffle(); // 原地点击未洗牌的堆，先洗牌
+      else window.tarotApp.draw();
+    }
+    lastTapTime = now;
   }
-});
+};
+
+// 绑定移动端与PC端事件
+window.addEventListener('mousedown', e => handleDown(e.clientX, e.clientY));
+window.addEventListener('mousemove', e => handleMove(e.clientX, e.clientY));
+window.addEventListener('mouseup', e => handleUp(e.clientX, e.clientY));
+
+window.addEventListener('touchstart', e => handleDown(e.touches[0].clientX, e.touches[0].clientY), {passive: false});
+window.addEventListener('touchmove', e => handleMove(e.touches[0].clientX, e.touches[0].clientY), {passive: false});
+window.addEventListener('touchend', e => handleUp(e.changedTouches[0].clientX, e.changedTouches[0].clientY));
+window.addEventListener('wheel', e => { if(!isVisionActive) { e.deltaY < 0 ? window.tarotApp.zoom() : window.tarotApp.shuffle(); }});
 
 // ==========================================
-// MediaPipe 手势引擎
+// 几何级 AI 手势引擎 (彻底解决歪手、倒手识别)
 // ==========================================
 const videoElement = document.getElementById('video-input');
 const canvasElement = document.getElementById('gesture-canvas');
@@ -300,13 +321,13 @@ const hands = new Hands({ locateFile: (f) => `https://cdn.jsdelivr.net/npm/@medi
 hands.setOptions({ maxNumHands: 1, modelComplexity: 0, minDetectionConfidence: 0.6 });
 
 hands.onResults((results) => {
-  if(!isVisionActive) return; // 关闭灵视时忽略手势
-  
+  if(!isVisionActive) return; // 关了灵视就别耗费算力判断手了
+
   if(currentState === STATE.a_STACK && document.getElementById('status-text').innerText.includes("凝视星空")) {
     setStatus("万物归原 [握拳]");
   }
 
-  canvasElement.width = 80; canvasElement.height = 80;
+  canvasElement.width = 60; canvasElement.height = 60;
   canvasCtx.save(); canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
   if (results.image) canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
 
@@ -314,39 +335,41 @@ hands.onResults((results) => {
     const lm = results.multiHandLandmarks[0];
     handVector.x = (0.5 - lm[9].x); handVector.y = (0.5 - lm[9].y);
 
+    // 【终极重构】：基于手腕节点的绝对物理距离，完全无视手的倾斜和倒立角度
     const getDist = (p1, p2) => Math.hypot(p1.x - p2.x, p1.y - p2.y);
     const wrist = lm[0];
     
+    // 如果指尖到手腕的距离 > 第二关节到手腕的距离，说明这根手指是伸直的
     const indexUp = getDist(lm[8], wrist) > getDist(lm[6], wrist);
     const middleUp = getDist(lm[12], wrist) > getDist(lm[10], wrist);
     const ringUp = getDist(lm[16], wrist) > getDist(lm[14], wrist);
     const pinkyUp = getDist(lm[20], wrist) > getDist(lm[18], wrist);
 
-    const spreadDist = getDist(lm[8], lm[20]);
-    const palmSize = getDist(lm[0], lm[9]);
-    const spreadRatio = spreadDist / palmSize; 
-    const THRESHOLD = 1.25; 
+    // 几根手指竖起来了？
+    const fingersUpCount = [indexUp, middleUp, ringUp, pinkyUp].filter(Boolean).length;
 
-    const isFist = !indexUp && !middleUp && !ringUp && !pinkyUp;
-    const isTwoFingers = indexUp && middleUp && !ringUp && !pinkyUp; 
-    const isFiveFingers = indexUp && middleUp && ringUp && pinkyUp;
-    
-    const isFiveTogether = isFiveFingers && spreadRatio < THRESHOLD;
-    const isFiveApart = isFiveFingers && spreadRatio >= THRESHOLD;
+    // 食指尖到小拇指尖的距离，对比它们指根的距离，算出张开的绝对比例
+    const tipSpread = getDist(lm[8], lm[20]);
+    const baseSpread = getDist(lm[5], lm[17]);
+    const spreadRatio = tipSpread / baseSpread; 
 
-    if (isFist) {
-      window.tarotApp.stack(); 
+    // 状态分流判定
+    if (fingersUpCount === 0) {
+      window.tarotApp.stack(); // 拳头 -> 重置
     } else if (currentState !== STATE.f_FINAL) {
-      if (isFiveTogether) window.tarotApp.shuffle(); 
-      else if (isFiveApart) window.tarotApp.zoom();  
-      else if (isTwoFingers) window.tarotApp.draw(); 
+      if (fingersUpCount === 1 || fingersUpCount === 2) {
+        window.tarotApp.draw(); // 1~2根手指 -> 抽牌 (非常宽容的判定)
+      } else if (fingersUpCount >= 3) {
+        if (spreadRatio < 1.4) window.tarotApp.shuffle(); // 比例小 -> 五指并拢洗牌
+        else window.tarotApp.zoom(); // 比例大 -> 五指张开放大
+      }
     }
 
     canvasCtx.strokeStyle = "rgba(230, 194, 122, 0.8)"; canvasCtx.lineWidth = 2; canvasCtx.fillStyle = "rgba(255, 255, 255, 0.9)";
     const drawLine = (p1, p2) => { canvasCtx.beginPath(); canvasCtx.moveTo(p1.x * canvasElement.width, p1.y * canvasElement.height); canvasCtx.lineTo(p2.x * canvasElement.width, p2.y * canvasElement.height); canvasCtx.stroke(); };
     const fingers = [[0,1,2,3,4], [0,5,6,7,8], [0,9,10,11,12], [0,13,14,15,16], [0,17,18,19,20]];
     fingers.forEach(f => { for(let i=0; i<f.length-1; i++) drawLine(lm[f[i]], lm[f[i+1]]); });
-    lm.forEach(p => { canvasCtx.beginPath(); canvasCtx.arc(p.x * canvasElement.width, p.y * canvasElement.height, 2, 0, 2*Math.PI); canvasCtx.fill(); });
+    lm.forEach(p => { canvasCtx.beginPath(); canvasCtx.arc(p.x * canvasElement.width, p.y * canvasElement.height, 1.5, 0, 2*Math.PI); canvasCtx.fill(); });
   }
   canvasCtx.restore();
 });
@@ -356,7 +379,6 @@ document.getElementById('start-cam-btn').addEventListener('click', () => {
   document.getElementById('ui-layer').style.display = 'block';
   videoElement.play().catch(()=>{}); 
   setStatus("正在建立星空连接...");
-  
   const cameraUtils = new Camera(videoElement, { onFrame: async () => { await hands.send({ image: videoElement }); }, width: 320, height: 240 });
   cameraUtils.start().then(() => setStatus("星空已连接，等待手势指令"));
 });
